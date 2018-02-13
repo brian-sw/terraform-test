@@ -1,0 +1,42 @@
+{
+	"variables": [],
+	"info": {
+		"name": "MergeDevelopToCI",
+		"_postman_id": "7e4a0905-0c73-0ab0-54ed-e59a4c0d4981",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "MergeIacCi",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 201;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://api.github.com/repos/shiftwise/iac/releases",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "token {{git_token}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"tag_name\": \"{{$timestamp}}\",\r\n  \"target_commitish\": \"continuous-integration\",\r\n  \"name\": \"ci010\",\r\n  \"body\": \"Periodic CI\",\r\n  \"draft\": false,\r\n  \"prerelease\": false\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

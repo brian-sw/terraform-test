@@ -1,0 +1,118 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Handy Scripts",
+		"_postman_id": "8a33b3e2-d950-e88c-9f50-01bedd3c5e61",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetTravisToken",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"postman.setGlobalVariable(\"travis_token\", jsonData.access_token);",
+							"",
+							"tests[\"successfully got token\"] = responseCode.code === 200;",
+							"",
+							"if(responseCode.code == 200)",
+							"{",
+							"    postman.setNextRequest('TravisCiBuild');",
+							"}",
+							"",
+							"tests[typeof(globals.something) === 'undefined'] = true;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.clearGlobalVariable(\"travis_token\");",
+							"postman.clearGlobalVariable(\"repos\");",
+							"postman.clearGlobalVariable(\"repo_id\");",
+							"postman.clearGlobalVariable(\"variable_id\");",
+							"postman.clearGlobalVariable(\"next_repo_query\");",
+							"postman.clearGlobalVariable(\"repo_query\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://api.travis-ci.com/auth/github",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.travis-ci.2+json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"github_token\":\"{{GIT_TOKEN}}\"}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "TravisCiBuild",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Build Queued Successfully\"] = responseCode.code >= 200 &&  responseCode.code < 300;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://api.travis-ci.com/repo/ShiftWise%2F{{REPO}}/requests",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.travis-ci.2+json",
+						"description": ""
+					},
+					{
+						"key": "Travis-API-Version",
+						"value": "3",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "token {{travis_token}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"request\": {\r\n\"branch\":\"{{BRANCH}}\",\r\n\"config\": {\r\n\"env\": {\r\n\"AutomationEnvironmentOverride\": \"{{TARGET_ENVIRONMENT}}\"}}}}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
